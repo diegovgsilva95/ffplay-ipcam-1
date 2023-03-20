@@ -1,5 +1,23 @@
-# python-dvr
+# python-dvr (modificado por diegosilva95)
+Esse projeto utiliza a base de código disponível no repositório [NeiroNx/python-dvr](https://github.com/NeiroNx/python-dvr) para possibilitar o monitoramento em tempo-real de câmeras IP que não possuem conexão genérica ONVIF através do `ffplay`.
 
+Dois arquivos novos foram adicionados: 
+- `watch.py`: contém o código necessário para solicitar conexão à câmera, solicitar o início do monitoramento e imprimir a saída binária do monitoramento
+- `watch.sh`: contém um shellscript necessário para fazer o pipe entre o streaming sendo impresso pelo `watch.py` ao `ffplay`, bem como realiza a passagem dos argumentos como IP da câmera, usuário e senha.
+
+## Chamada do shellscript
+```
+./watch.sh <IP da câmera> <usuário> [senha]
+```
+
+## Melhorias futuras (TODOs)
+- Adicionar descobrimento automático do IP da câmera, uma vez que tais câmeras constantemente enviam pacotes UDP ao broadcast para a porta 34569. Bastando ouvir na porta local 34569, é possível receber tais informações de autoconfiguração, que vêm serializadas em JSON.
+- Gravação (fazer juz ao nome "DVR" do projeto)
+- Incorporar um front-end, provavelmente em algo análogo ao Electron ou usando Django, ou mesmo cross-language com Javascript (Node.js) + Electron / Express.js
+- Configurar título da câmera e outros parâmetros
+- PTZ (não consegui fazer funcionar a função `cam.ptz()` na câmera testada)
+
+# README original em Inglês: python-dvr
 Python library for configuring a wide range of IP cameras that use the NETsurveillance ActiveX plugin
 XMeye SDK
 
