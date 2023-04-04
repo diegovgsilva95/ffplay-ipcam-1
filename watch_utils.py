@@ -1,3 +1,9 @@
+"""
+Author: Diego Silva <github.com/diegovgsilva95>
+Description: 
+    (pt-br) Módulo de utilitários para monitoramento em tempo real de câmeras IP chinesas SOFIA usando FFPLAY/FFMPEG.
+    (en) Util module for real-time monitoring of SOFIA chinese IP cameras using FFPLAY/FFMPEG.
+""" 
 import sys
 
 def printerr(*args):

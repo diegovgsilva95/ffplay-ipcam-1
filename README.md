@@ -1,21 +1,42 @@
 # python-dvr (modificado por diegosilva95)
 Esse projeto utiliza a base de código disponível no repositório [NeiroNx/python-dvr](https://github.com/NeiroNx/python-dvr) para possibilitar o monitoramento em tempo-real de câmeras IP que não possuem conexão genérica ONVIF através do `ffplay`.
 
-Dois arquivos novos foram adicionados: 
-- `watch.py`: contém o código necessário para solicitar conexão à câmera, solicitar o início do monitoramento e imprimir a saída binária do monitoramento
-- `watch.sh`: contém um shellscript necessário para fazer o pipe entre o streaming sendo impresso pelo `watch.py` ao `ffplay`, bem como realiza a passagem dos argumentos como IP da câmera, usuário e senha.
+Cinco arquivos novos foram adicionados: 
+- `watch.py`: contém o código necessário para solicitar conexão à câmera, solicitar o início do monitoramento e repassar áudio e vídeo aos consumidores.
+- `watch_audio.py`: consumidor de áudio, contém o código necessário para inicializar o FFPLAY para reprodução do áudio a-Law.
+- `watch_video.py`: consumidor de vídeo, contém o código necessário para inicializar o FFPLAY para reprodução do vídeo HEVC.
+- `watch_utils.py`: apenas um módulo contendo funções utilitárias para consumidores e para o módulo principal. Por hora, possui apenas o `printerr`, usado para imprimir no stderr sem ter que ficar toda hora repetindo `file=sys.stderr` nos parâmetros de cada `print`
+- `watch.sh`: antigamente era um shellscript necessário para fazer o pipe entre o streaming sendo impresso pelo `watch.py` ao `ffplay`, bem como realizava a passagem dos argumentos como IP da câmera, usuário e senha. **A partir do commit 960847c (04 de Abril de 2023),** está ali para fins de comodidade. Pode-se chamar o programa tanto via shellscript quanto pelo próprio watch.py.
 
 ## Chamada do shellscript
 ```
 ./watch.sh <IP da câmera> <usuário> [senha]
 ```
 
+## Commits
+### Versão 2023.04.04-2 (04 de Abril de 2023)
+- Melhorando texto de commit
+- Corrigindo erro de digitação no endereço GitHub da autoria
+- Adicionando verificação de uso incorreto do watch.py como módulo importado
+- Alterando README para refletir as mudanças realizadas até aqui
+
+### Versão 2023.04.04-1 (960847c) (04 de Abril de 2023)
+- Implementado modelo da câmera no nome da janela
+- Uso de subprocessos dispensando uso do shellscript com pipe ao FFMPEG
+- Adicionada reprodução do áudio a-Law
+- Segregação de função para consumidores de áudio e de vídeo
+- Adicionado limite de tempo para não cansar a câmera (padrão 120 seg.)
+- Usando streaming secundário Extra (pode ser alterado para Main)
+- Adicionado traceback para melhor debugging em caso de erro
+
+
 ## Melhorias futuras (TODOs)
 - Adicionar descobrimento automático do IP da câmera, uma vez que tais câmeras constantemente enviam pacotes UDP ao broadcast para a porta 34569. Bastando ouvir na porta local 34569, é possível receber tais informações de autoconfiguração, que vêm serializadas em JSON.
 - Gravação (fazer juz ao nome "DVR" do projeto)
 - Incorporar um front-end, provavelmente em algo análogo ao Electron ou usando Django, ou mesmo cross-language com Javascript (Node.js) + Electron / Express.js
-- Configurar título da câmera e outros parâmetros
+- ~~Configurar título da câmera e outros parâmetros~~ (Implementado!)
 - PTZ (não consegui fazer funcionar a função `cam.ptz()` na câmera testada)
+- Tentar usar um único subprocesso para áudio e vídeo, pois a segregação de ambos pode dificultar o streaming para serviços RTSP, por exemplo
 
 # README original em Inglês: python-dvr
 Python library for configuring a wide range of IP cameras that use the NETsurveillance ActiveX plugin

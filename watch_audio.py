@@ -1,5 +1,5 @@
 """
-Author: Diego Silva <github.com/diegosilva95>
+Author: Diego Silva <github.com/diegovgsilva95>
 Description: 
     (pt-br) Consumidor de áudio para monitoramento em tempo real de câmeras IP chinesas SOFIA usando FFPLAY/FFMPEG.
     (en) Audio consumer for real-time monitoring of SOFIA chinese IP cameras using FFPLAY/FFMPEG.
