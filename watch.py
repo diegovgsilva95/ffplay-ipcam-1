@@ -25,6 +25,7 @@ globalData = type("", (), {})() # Forma esquisita de fazer o mesmo que um new cl
 #endregion
 #region Define variáveis globais e função de monitoramento
 monitoring_since = time()
+consumers_initiated = False
 
 def handleMonitor(frame, meta, user_data):
     global monitoring_since
@@ -54,6 +55,30 @@ def handleMonitor(frame, meta, user_data):
     if (monitoring_since is not None) and (time() - monitoring_since >= MONITOR_MAX_DURATION):
         printerr(f"Parando monitoramento após {MONITOR_MAX_DURATION} segundos.")
         cam.stop_monitor()
+
+def detailException(e):
+    curr_traceback = e.__traceback__
+    curr_traceback_index = 0
+    err_stack = []
+
+    while curr_traceback is not None:
+        frame = curr_traceback.tb_frame
+        fn_name = frame.f_code.co_name
+        if fn_name == "<module>":
+            fn_name = "escopo principal"
+        else:
+            fn_name = f"função '{fn_name}'"
+
+        err_stack.append(f"\t{frame.f_code.co_filename}:{curr_traceback.tb_lineno}, {fn_name}")
+        
+        curr_traceback_index = curr_traceback_index + 1
+        if curr_traceback_index > 20:
+            break
+        curr_traceback = curr_traceback.tb_next
+
+    printerr("Erro genérico:", repr(e))
+    printerr("\n".join(err_stack))
+
 #endregion
 if __name__ != "__main__":
     printerr(f"[{os.path.basename(__file__)}] Esse módulo espera ser invocado diretamente via Python. Saindo.")
@@ -64,20 +89,25 @@ else:
         cam_ip = cam_args[0]
         cam_user = cam_args[1]
         cam_pw = "" # ... e nem aqui.
-        if len(cam_args) == 3:
+        if len(cam_args) >= 3:
             cam_pw = cam_args[2]
+        if len(cam_args) >= 4 and len(cam_args[3]) > 0:
+            STREAM_NAME = cam_args[3]
+        
 
     except Exception as e:
         printerr("Alguns parâmetros são obrigatórios.")
-        printerr(f"Chamada:\n\t./{os.path.basename(__file__)} <IP da câmera> <Usuário> [senha]")
+        printerr(f"Chamada:\n\t./{os.path.basename(__file__)} <IP da câmera> <Usuário> [senha] [nome do stream]")
         exit(1)
     #endregion
     try:
         #region Conecta com a câmera...
         cam = DVRIPCam(cam_ip, user=cam_user, password=cam_pw)
+
         # cam.debug()
         if not cam.login():
-            printerr(f"Falha ao conectar com a câmera {cam_ip}")
+            printerr(f"Falha ao conectar com a câmera {cam_ip}. Verifique as informações:")
+            printerr(f"IP: {cam_ip}\nUsuário: {cam_user}\nSenha: {len(cam_pw)} caracteres\nStream: {STREAM_NAME}")
             exit(1)
         #endregion
         #region Obtém informações da câmera
@@ -91,6 +121,7 @@ else:
         #region Inicializa o compartilhamento de escopo para consumidores de áudio e de vídeo...
         init_video(globalData)
         init_audio(globalData)
+        consumers_initiated = True
         #endregion
         #region Iniciando monitoramento...
         printerr(f"Requisitando modo de monitoramento...")
@@ -103,6 +134,7 @@ else:
         printerr(f"Encerrando FFMPEG...")
         clean_video()
         clean_audio()
+        consumers_initiated = False
         #endregion
         #region Levantando eventuais erros anteriores para debugging...
         if "consumerError" in dir(globalData):
@@ -112,26 +144,21 @@ else:
         printerr("Fim do programa")
     #region Tratamento de erros
     # Erros específicos (como SomethingIsWrongWithCamera) foram removidos, por hora.
+    except SomethingIsWrongWithCamera as e:
+        if str(e) == 'Cannot connect to camera':
+            printerr(f"Falha ao conectar com a câmera {cam_ip}. Verifique as informações:")
+            printerr(f"IP: {cam_ip}\nUsuário: {cam_user}\nSenha: {len(cam_pw)} caracteres\nStream: {STREAM_NAME}")
+            if consumers_initiated:
+                printerr("Encerrando FFMPEG")
+                clean_audio()
+                clean_video()
+            exit(0)
+        else:
+            detailException(e)
+            if consumers_initiated:
+                printerr("Encerrando FFMPEG")
+                clean_audio()
+                clean_video()
     except Exception as e:
-        curr_traceback = e.__traceback__
-        curr_traceback_index = 0
-        err_stack = []
-
-        while curr_traceback is not None:
-            frame = curr_traceback.tb_frame
-            fn_name = frame.f_code.co_name
-            if fn_name == "<module>":
-                fn_name = "escopo principal"
-            else:
-                fn_name = f"função '{fn_name}'"
-
-            err_stack.append(f"\t{frame.f_code.co_filename}:{curr_traceback.tb_lineno}, {fn_name}")
-            
-            curr_traceback_index = curr_traceback_index + 1
-            if curr_traceback_index > 20:
-                break
-            curr_traceback = curr_traceback.tb_next
-
-        printerr("Erro genérico:", repr(e))
-        printerr("\n".join(err_stack))
+        detailException(e)
     #endregion

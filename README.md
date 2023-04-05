@@ -10,10 +10,28 @@ Cinco arquivos novos foram adicionados:
 
 ## Chamada do shellscript
 ```
-./watch.sh <IP da câmera> <usuário> [senha]
+./watch.sh <IP da câmera> <usuário> [senha] [nome do fluxo]
+python watch.py  <IP da câmera> <usuário> [senha] [nome do fluxo]
+```
+
+Caso a senha seja vazia (não recomendado) mas seja necessário informar o nome de um fluxo, use duas aspas duplas, exemplo:
+
+```
+./watch.sh 10.1.1.4 vigia "" Main
 ```
 
 ## Commits
+### Versão 2023.04.05-1 (05 de Abril de 2023)
+- Adicionando aspas na passagem de parâmetros do Shellscript
+- Adicionando parâmetro para especificar o fluxo (Extra como stream padrão)
+- Verificando parâmetro vazio para fluxo (devido ao primeiro item)
+- Adicionando informações de depuração caso conexão falhe
+- Traceback transformado em função 
+- Retorno de verificação para SomethingIsWrongWithCamera
+- Criando variável para saber se os consumidores foram iniciados
+- Limpando consumidores caso tenham sido iniciados
+- Alterando README para refletir as mudanças realizadas até aqui
+
 ### Versão 2023.04.04-2 (04 de Abril de 2023)
 - Melhorando texto de commit
 - Corrigindo erro de digitação no endereço GitHub da autoria
